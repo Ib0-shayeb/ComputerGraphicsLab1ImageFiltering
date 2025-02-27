@@ -15,6 +15,38 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
-    <TextBlock Text="{Binding Greeting}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    <Grid RowDefinitions="40, Auto"  Margin="4">
+        
+        <StackPanel  Orientation="Horizontal" Background="LightGray" Height="40">
+            <Button Content="Open File" Click="Open_File_Button_Clicked"/>
+            <Button Content="Settings" Click="Settings_Click"/>
+            <Button Content="Exit" Click="Exit_Click"/>
+        </StackPanel>
+        
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,200"  Margin="4">
+            <Image Name="ImageControll1"/>
+            <Image Grid.Column="1" Name="ImageControll2"/>
+            <Grid Grid.Column="2" RowDefinitions="*,*"  Margin="4">
+                <StackPanel Grid.Row="0" Name="ChooseFiltersStackPanel" Background="Red">
+                    <ItemsControl ItemsSource="{Binding Filters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding Name}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+                <StackPanel Grid.Row="1" Name="SelectedFiltersStackPanel" Background="Pink">
+                    <ItemsControl ItemsSource="{Binding SelectedFilters}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Content="{Binding Name}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>    
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </Grid> 
 
 </Window>
