@@ -19,6 +19,9 @@ public partial class MainWindowViewModel : ViewModelBase
         {
             SelectedFilters.Add(new GeneralFilter());
         }
+    public void ClearSelectedFilters(){
+        SelectedFilters.Clear();
+    }
 
     public MainWindowViewModel()
         {
