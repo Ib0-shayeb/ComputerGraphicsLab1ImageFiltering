@@ -31,7 +31,7 @@
                     <ItemsControl ItemsSource="{Binding Filters}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding Name}"/>
+                                <Button Content="{Binding Name}" Command="{Binding ExecuteAddFilter}"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>

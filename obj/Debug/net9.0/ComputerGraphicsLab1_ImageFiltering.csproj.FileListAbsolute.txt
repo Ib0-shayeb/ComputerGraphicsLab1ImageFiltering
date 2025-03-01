@@ -66,3 +66,7 @@
 /home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/obj/Debug/net9.0/Computer.71D187BD.Up2Date
 /home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/obj/Debug/net9.0/ComputerGraphicsLab1_ImageFiltering.genruntimeconfig.cache
 /home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/obj/Debug/net9.0/ref/ComputerGraphicsLab1_ImageFiltering.dll
+/home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/bin/Debug/net9.0/DynamicData.dll
+/home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/bin/Debug/net9.0/ReactiveUI.dll
+/home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/bin/Debug/net9.0/Splat.dll
+/home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/bin/Debug/net9.0/System.Reactive.dll

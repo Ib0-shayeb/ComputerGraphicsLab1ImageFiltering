@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "F2ehPzRjiGA=",
+  "dgSpecHash": "q643VRVMFFc=",
   "success": true,
   "projectFilePath": "/home/actuallynotbillgates/Documents/ComputerGraphicsLab1_ImageFiltering/ComputerGraphicsLab1_ImageFiltering.csproj",
   "expectedPackageFiles": [
@@ -21,18 +21,23 @@
     "/home/actuallynotbillgates/.nuget/packages/avalonia.win32/11.2.1/avalonia.win32.11.2.1.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/avalonia.x11/11.2.1/avalonia.x11.11.2.1.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/communitytoolkit.mvvm/8.2.1/communitytoolkit.mvvm.8.2.1.nupkg.sha512",
+    "/home/actuallynotbillgates/.nuget/packages/dynamicdata/9.0.4/dynamicdata.9.0.4.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/harfbuzzsharp/7.3.0.2/harfbuzzsharp.7.3.0.2.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/harfbuzzsharp.nativeassets.linux/7.3.0.2/harfbuzzsharp.nativeassets.linux.7.3.0.2.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/harfbuzzsharp.nativeassets.macos/7.3.0.2/harfbuzzsharp.nativeassets.macos.7.3.0.2.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/harfbuzzsharp.nativeassets.webassembly/7.3.0.3-preview.2.2/harfbuzzsharp.nativeassets.webassembly.7.3.0.3-preview.2.2.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/harfbuzzsharp.nativeassets.win32/7.3.0.2/harfbuzzsharp.nativeassets.win32.7.3.0.2.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/microcom.runtime/0.11.0/microcom.runtime.0.11.0.nupkg.sha512",
+    "/home/actuallynotbillgates/.nuget/packages/reactiveui/20.1.63/reactiveui.20.1.63.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/skiasharp/2.88.8/skiasharp.2.88.8.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/skiasharp.nativeassets.linux/2.88.8/skiasharp.nativeassets.linux.2.88.8.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/skiasharp.nativeassets.macos/2.88.8/skiasharp.nativeassets.macos.2.88.8.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/skiasharp.nativeassets.webassembly/2.88.8/skiasharp.nativeassets.webassembly.2.88.8.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/skiasharp.nativeassets.win32/2.88.8/skiasharp.nativeassets.win32.2.88.8.nupkg.sha512",
+    "/home/actuallynotbillgates/.nuget/packages/splat/15.1.1/splat.15.1.1.nupkg.sha512",
+    "/home/actuallynotbillgates/.nuget/packages/system.componentmodel.annotations/5.0.0/system.componentmodel.annotations.5.0.0.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/system.io.pipelines/8.0.0/system.io.pipelines.8.0.0.nupkg.sha512",
+    "/home/actuallynotbillgates/.nuget/packages/system.reactive/6.0.1/system.reactive.6.0.1.nupkg.sha512",
     "/home/actuallynotbillgates/.nuget/packages/tmds.dbus.protocol/0.20.0/tmds.dbus.protocol.0.20.0.nupkg.sha512"
   ],
   "logs": []

@@ -1,31 +1,28 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Interactivity;
+using ReactiveUI;
 
 namespace ComputerGraphicsLab1_ImageFiltering
 {
-    public abstract class GeneralFilter
-    {
-        public abstract string Name { get;}
-        public abstract void AddFilter(object? sender, RoutedEventArgs e);
-        public abstract byte[] ApplyFilter(byte[] input);
-    }
-    public class InversionFilter : GeneralFilter
-    {
-        public override string Name {get;}
 
+    public class GeneralFilter :  ReactiveObject
+    {
+        public  string Name {get;}
+        public  Action? AddFilter { get; set; }
 
-        public InversionFilter(){
-            Name = "Inversion Filter";
+        public GeneralFilter(){
+            Name = "General Filter";
         }
-        public override void AddFilter(object? sender, RoutedEventArgs e)
-        {
-            
-        }
-        public override byte[] ApplyFilter(byte[] input){
+        public  byte[] ApplyFilter(byte[] input){
             return [];
+        }
+        public void ExecuteAddFilter()
+        {
+            AddFilter?.Invoke();
         }
     }
 }
