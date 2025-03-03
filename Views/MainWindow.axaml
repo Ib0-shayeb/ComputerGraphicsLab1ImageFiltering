@@ -26,7 +26,7 @@
         <Grid Grid.Row="1" ColumnDefinitions="*,*,200"  Margin="4">
             <Image Name="ImageControll1"/>
             <Image Grid.Column="1" Name="ImageControll2"/>
-            <Grid Grid.Column="2" RowDefinitions="*,*,30"  Margin="4">
+            <Grid Grid.Column="2" RowDefinitions="*,*,*"  Margin="4">
                 <StackPanel Grid.Row="0" Name="ChooseFiltersStackPanel" Background="Red">
                     <ItemsControl ItemsSource="{Binding Filters}">
                         <ItemsControl.ItemTemplate>
@@ -48,6 +48,7 @@
                 </StackPanel>
                 <StackPanel Grid.Row="2" Background="Yellow">
                     <Button Content="Clear Selected Filters" Command="{Binding ClearSelectedFilters}"/>
+                    <Button Content="Apply Filters" Click="ApplyFilters"/>
                 </StackPanel>
             </Grid>
         </Grid>
