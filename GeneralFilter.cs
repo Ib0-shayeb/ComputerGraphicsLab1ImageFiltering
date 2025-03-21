@@ -24,6 +24,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
         GausianBlur,
         Errosion,
         Dilation,
+        GrayScale,
     }
 
     public class GeneralFilterListItem{
@@ -103,6 +104,9 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 case FilterType.Dilation:
                     Name = "Dilation";
                     break;
+                case FilterType.GrayScale:
+                    Name = "GrayScale";
+                    break;
             }
         }
         public  byte[] ApplyFilter(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride){
@@ -144,6 +148,9 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     break;
                 case FilterType.Dilation:
                     GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    break;
+                case FilterType.GrayScale:
+                    GrayScaleFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
             }
             
@@ -461,6 +468,29 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     pixelArray[index + 1] = (byte)TrimValue(255 - pixelArray[index + 1]);  // Green
                     pixelArray[index + 2] = (byte)TrimValue(255 - pixelArray[index + 2]); // Red
 
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public static byte[] GrayScaleFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        {
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    int B = pixelArray[index];
+                    int G = pixelArray[index + 1];
+                    int R = pixelArray[index + 2];
+
+                    byte Gray = (byte)TrimValue((int)(0.299*R+0.587*G+0.114*B));
+
+                    pixelArray[index] = Gray;
+                    pixelArray[index + 1] = Gray;
+                    pixelArray[index + 2] = Gray;
                 }
             }
 

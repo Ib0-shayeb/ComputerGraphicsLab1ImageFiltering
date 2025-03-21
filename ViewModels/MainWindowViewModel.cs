@@ -16,9 +16,7 @@ public partial class MainWindowViewModel : ViewModelBase
     public ObservableCollection<GeneralFilterListItem> SelectedFilters { get; set; }
 
     public ReactiveCommand<Unit, Unit> ExampleCommand { get; }
-    //public ObservableCollection<Point> PolylinePoints { get; set;}
-    //        CHANGE
-    //          BIND PTS INSTEAD OF     
+  
     private GeneralFilterListItem? _selectedItem;
     public GeneralFilterListItem? SelectedItem
     {
@@ -76,6 +74,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         SelectedFilters.Add(new GeneralFilterListItem(new GeneralFilter(FilterType.Dilation), SelectedFilters.Count));
     }
+    public void AddGrayScaleFilter()
+    {
+        SelectedFilters.Add(new GeneralFilterListItem(new GeneralFilter(FilterType.GrayScale), SelectedFilters.Count));
+    }
     public void ClearSelectedFilters(){
         SelectedFilters.Clear();
     }
@@ -117,7 +119,8 @@ public partial class MainWindowViewModel : ViewModelBase
             ErrosionFilter.AddFilter = AddErrosionFilter;
             var DilationFilter = new GeneralFilter(FilterType.Dilation);
             DilationFilter.AddFilter = AddDilationFilter;
-
+            var GrayScaleFilter = new GeneralFilter(FilterType.GrayScale);
+            GrayScaleFilter.AddFilter = AddGrayScaleFilter;
 
             Filters = new ObservableCollection<GeneralFilter>(new List<GeneralFilter>
             {
@@ -133,7 +136,9 @@ public partial class MainWindowViewModel : ViewModelBase
                 EdgeDetectionFilter,
 
                 ErrosionFilter,
-                DilationFilter
+                DilationFilter,
+
+                GrayScaleFilter
             });
             
         }
