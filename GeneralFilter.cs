@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -12,38 +13,74 @@ using ReactiveUI;
 namespace ComputerGraphicsLab1_ImageFiltering
 {
     public enum FilterType {
-                Inversion,
-                BrightnessCorrection,
-                ContrastEnhancement,
-                GammaCorrection,
-                Blur,
-                Emboss,
-                EdgeDetection,
-                Sharpen,
-                GausianBlur,
-            }
+        Inversion,
+        BrightnessCorrection,
+        ContrastEnhancement,
+        GammaCorrection,
+        Blur,
+        Emboss,
+        EdgeDetection,
+        Sharpen,
+        GausianBlur,
+        Errosion,
+        Dilation,
+    }
+
+    public class GeneralFilterListItem{
+        public GeneralFilter filter {get;}
+        public int index {get;}
+        public bool selected {get; set;}
+        public GeneralFilterListItem(GeneralFilter _filter, int _index){
+            filter = _filter;
+            index = _index;
+            selected = false;
+        }
+
+        internal static GeneralFilterListItem? FirstOrDefault(Func<object, object> value)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
     public class GeneralFilter
     {
-        public int constant;
+        public EditablePolyline editablePolyline {get;}
+        public double constant;
         public FilterType FType {get;}
         public  string Name {get;}
         public  Action? AddFilter { get; set; }
 
         public GeneralFilter(FilterType ftype){
             FType = ftype;
+            Points points;
             switch (FType)
             {
                 case FilterType.Inversion:
                     Name = "Inversion";
+                    points = new Points{new Point(0, 255), new Point(255, 0)};
+                    editablePolyline = new EditablePolyline(points);
                     break;
                 case FilterType.BrightnessCorrection:
                     Name = "BrightnessCorrection";
+                    constant = 50;
+                    points = new Points{new Point(0, constant), new Point(255 - constant, 255), new Point(255, 255)};
+                    editablePolyline = new EditablePolyline(points);
                     break;
                 case FilterType.ContrastEnhancement:
                     Name = "ContrastEnhancement";
+                    constant = 20;
+                    points = new Points{new Point(0, 0), new Point(constant, 0), new Point(255 - constant, 255), new Point(255, 255)};
+                    editablePolyline = new EditablePolyline(points);
                     break;
                 case FilterType.GammaCorrection:
                     Name = "GammaCorrection";
+                    constant = 0.25; //Gamma
+                    var gammaCorrection = 1/constant;
+                    points = new Points();
+                    for(int i = 0; i < 256; i++){
+                        points.Add(new Point(i, TrimValue((int)(Math.Pow((i/255.0), gammaCorrection) * 255))));
+                    }
+                    editablePolyline = new EditablePolyline(points);
                     break;
                 case FilterType.Blur:
                     Name = "BlurFilter";
@@ -60,6 +97,12 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 case FilterType.GausianBlur:
                     Name = "GausianBlur";
                     break;
+                case FilterType.Errosion:
+                    Name = "Errosion";
+                    break;
+                case FilterType.Dilation:
+                    Name = "Dilation";
+                    break;
             }
         }
         public  byte[] ApplyFilter(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride){
@@ -67,15 +110,18 @@ namespace ComputerGraphicsLab1_ImageFiltering
             switch (FType)
             {
                 case FilterType.Inversion:
-                    InversionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
                 case FilterType.BrightnessCorrection:
-                    BrightnessCorrectionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    // BrightnessCorrectionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
                 case FilterType.ContrastEnhancement:
-                    ContrastEnhancementFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    //ContrastEnhancementFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
                 case FilterType.GammaCorrection:
+                    //GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     GammaCorrectionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
                 case FilterType.Blur:
@@ -93,9 +139,121 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 case FilterType.GausianBlur:
                     GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
+                case FilterType.Errosion:
+                    GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    break;
+                case FilterType.Dilation:
+                    GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    break;
             }
             
             return pixelArray;
+        }
+        public byte findOutputFromPolyline(byte color, IList<Point> points){
+            int i;
+            for(i =0; i<points.Count; i++){
+                if(points[i].X >= color) break;
+            }
+            if(i == 0) return (byte)points[0].Y;
+            var M = (points[i].Y - points[i-1].Y)/(points[i].X - points[i-1].X);
+            var C = points[i].Y  - M * points[i].X;
+            byte Y = (byte)(M * color + C);
+            return Y;
+        }
+        public byte[] GeneralFunctionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        {
+            var points = editablePolyline._polyline.Points;
+
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    pixelArray[index] = findOutputFromPolyline(pixelArray[index], points);      // Blue
+                    pixelArray[index + 1] = findOutputFromPolyline(pixelArray[index + 1], points);  // Green
+                    pixelArray[index + 2] = findOutputFromPolyline(pixelArray[index + 2], points); // Red
+
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public static byte[] ErrosionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        {
+                
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    pixelArray[index] = (byte)(ConvolutionalFilterMin(pixelArray, x, y, pixelWidth, pixelHeight, stride, 3, 3, 1, 1, 0));
+                    pixelArray[index + 1] = (byte)(ConvolutionalFilterMin(pixelArray, x, y, pixelWidth, pixelHeight, stride, 3, 3, 1, 1, 1));
+                    pixelArray[index + 2] = (byte)(ConvolutionalFilterMin(pixelArray, x, y, pixelWidth, pixelHeight, stride, 3, 3, 1, 1, 2));
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public static byte[] DilationFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        {
+            
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    pixelArray[index] = (byte)(ConvolutionalFilterMax(pixelArray, x, y, pixelWidth, pixelHeight, stride, 3, 3, 1, 1, 0));
+                    pixelArray[index + 1] = (byte)(ConvolutionalFilterMax(pixelArray, x, y, pixelWidth, pixelHeight, stride, 3, 3, 1, 1, 1));
+                    pixelArray[index + 2] = (byte)(ConvolutionalFilterMax(pixelArray, x, y, pixelWidth, pixelHeight, stride, 3, 3, 1, 1, 2));
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public static int ConvolutionalFilterMax(byte[] pixelArray, int x, int y, int pixelWidth, int pixelHeight, int stride, int mheight, int mwidth, int mx, int my, int clr)
+        {
+            int max = 0;
+            for (int i = 0; i < mheight; i++)
+            {
+                for (int j = 0; j < mwidth; j++)
+                {
+                    int actualx = Math.Max(Math.Min(x + j - mx, pixelWidth - 1), 0);
+                    int actualy = Math.Max(Math.Min(y + i - my, pixelHeight -1), 0);//replace oob with edge pixels
+                    if(actualx == mx && actualy == my) continue;
+
+                    int index = (actualy * stride) + (actualx * 4);
+                    
+                    
+                    max = (pixelArray[index + clr] > max) ? pixelArray[index + clr] : max;
+                }
+            }
+
+            return max;
+        }
+        public static int ConvolutionalFilterMin(byte[] pixelArray, int x, int y, int pixelWidth, int pixelHeight, int stride, int mheight, int mwidth, int mx, int my, int clr)
+        {
+            int min = 255;
+            for (int i = 0; i < mheight; i++)
+            {
+                for (int j = 0; j < mwidth; j++)
+                {
+                    int actualx = Math.Max(Math.Min(x + j - mx, pixelWidth - 1), 0);
+                    int actualy = Math.Max(Math.Min(y + i - my, pixelHeight -1), 0);//replace oob with edge pixels
+                    if(actualx == mx && actualy == my) continue;
+                    
+                    int index = (actualy * stride) + (actualx * 4);
+                    
+                    min = (pixelArray[index + clr] < min) ? pixelArray[index + clr] : min;
+                }
+            }
+
+            return min;
         }
         //this function only sums, you have to divide the output
         public static int ConvolutionalFilterSum(byte[] pixelArray, int x, int y, int pixelWidth, int pixelHeight, int stride, int[,] matrix, int mheight, int mwidth, int mx, int my, int clr)
@@ -229,8 +387,8 @@ namespace ComputerGraphicsLab1_ImageFiltering
         {
             AddFilter?.Invoke();
         }
-        public static int TrimValue(int value){
-            return Math.Max(0, Math.Min(255, value));
+        public static byte TrimValue(int value){
+            return (byte)Math.Max(0, Math.Min(255, value));
         }
         public static byte[] BrightnessCorrectionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
         {

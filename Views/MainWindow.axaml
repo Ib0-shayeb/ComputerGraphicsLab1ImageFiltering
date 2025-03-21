@@ -15,18 +15,20 @@
         <vm:MainWindowViewModel/>
     </Design.DataContext>
 
+
     <Grid RowDefinitions="40, Auto"  Margin="4">
         
         <StackPanel  Orientation="Horizontal" Background="LightGray" Height="40">
             <Button Content="Open File" Click="Open_File_Button_Clicked"/>
-            <Button Content="Settings" Click="Settings_Click"/>
+            <Button Content="Save Result" Click="Save_Click"/>
             <Button Content="Exit" Click="Exit_Click"/>
+            <Button Content="{Binding Greeting}"/>
         </StackPanel>
         
-        <Grid Grid.Row="1" ColumnDefinitions="*,*,200"  Margin="4">
-            <Image Name="ImageControll1"/>
-            <Image Grid.Column="1" Name="ImageControll2"/>
-            <Grid Grid.Column="2" RowDefinitions="*,*,*"  Margin="4">
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,300"  Margin="4">
+            <Image Stretch="None" Name="ImageControll1"/>
+            <Image Stretch="None" Grid.Column="1" Name="ImageControll2"/>
+            <Grid Grid.Column="2" RowDefinitions="auto,auto,auto"  Margin="4">
                 <StackPanel Grid.Row="0" Name="ChooseFiltersStackPanel" Background="Red">
                     <ItemsControl ItemsSource="{Binding Filters}">
                         <ItemsControl.ItemTemplate>
@@ -40,7 +42,10 @@
                     <ItemsControl ItemsSource="{Binding SelectedFilters}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Button Content="{Binding Name}"/>
+                                <Button 
+                                Content="{Binding filter.Name}"
+                                Command="{Binding #SelectedFiltersStackPanel.((vm:MainWindowViewModel)DataContext).SelectCanvasFilterPolyline}" 
+                                CommandParameter="{Binding}"/>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                         
@@ -49,6 +54,10 @@
                 <StackPanel Grid.Row="2" Background="Yellow">
                     <Button Content="Clear Selected Filters" Command="{Binding ClearSelectedFilters}"/>
                     <Button Content="Apply Filters" Click="ApplyFilters"/>
+                </StackPanel>
+                
+                <StackPanel Grid.Row="3" Margin="0,90,0,0">
+                    <ContentControl Content="{Binding SelectedItem.filter.editablePolyline}" />
                 </StackPanel>
             </Grid>
         </Grid>

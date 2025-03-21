@@ -9,6 +9,7 @@ using System;
 using Avalonia.Platform;
 using System.Runtime.InteropServices;
 using ComputerGraphicsLab1_ImageFiltering.ViewModels;
+using System.IO;
 
 namespace ComputerGraphicsLab1_ImageFiltering.Views;
 
@@ -19,9 +20,13 @@ public partial class MainWindow : Window
     public int pixelWidth;
     public int pixelHeight;
     public int stride;
+    public Image imageControl2;
+    public WriteableBitmap bitmap2;
     public MainWindow()
     {
+        DataContext = new MainWindowViewModel(); 
         InitializeComponent();
+
     }
     private async void Open_File_Button_Clicked(object sender, RoutedEventArgs e)
     {
@@ -68,28 +73,48 @@ public partial class MainWindow : Window
 
         var viewModel = this.DataContext as MainWindowViewModel;
 
-        foreach (var filter in viewModel.SelectedFilters)
+        foreach (var filterItem in viewModel.SelectedFilters)
         {
-            filter.ApplyFilter(pixelArray, pixelWidth, pixelHeight, stride);
+            filterItem.filter.ApplyFilter(pixelArray, pixelWidth, pixelHeight, stride);
         }
 
-        var imageControl2 = this.FindControl<Image>("ImageControll2");
+        imageControl2 = this.FindControl<Image>("ImageControll2");
         Vector dpi = new Vector(96, 96);
-        var bitmap = new WriteableBitmap(
+        bitmap2 = new WriteableBitmap(
             new PixelSize(pixelWidth, pixelHeight),
             dpi,
             PixelFormat.Bgra8888,
             AlphaFormat.Premul);
 
-        using (var frameBuffer = bitmap.Lock())
+        using (var frameBuffer = bitmap2.Lock())
         {
             Marshal.Copy(pixelArray, 0, frameBuffer.Address, pixelArray.Length);
         }
-        imageControl2.Source = bitmap;
+        imageControl2.Source = bitmap2;
     }
-    private void Settings_Click(object sender, RoutedEventArgs e)
+    private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        
+        if (bitmap2==null) return;
+
+        var dialog = new SaveFileDialog
+        {
+            Title = "Save Image",
+            InitialFileName = "output.png",
+            Filters = new()
+            {
+                new FileDialogFilter { Name = "PNG Image", Extensions = { "png" } },
+                new FileDialogFilter { Name = "JPEG Image", Extensions = { "jpg", "jpeg" } }
+            }
+        };
+
+        string? filePath = await dialog.ShowAsync(this);
+
+        using (FileStream fs = new FileStream(filePath, FileMode.Create))
+        {
+            // Encode the bitmap as PNG (or use JpegEncoder for JPEG)
+            bitmap2.Save(fs);
+        }
+   
     }
 
     private void Exit_Click(object sender, RoutedEventArgs e)
