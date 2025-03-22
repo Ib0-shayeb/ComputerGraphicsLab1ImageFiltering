@@ -78,6 +78,10 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         SelectedFilters.Add(new GeneralFilterListItem(new GeneralFilter(FilterType.GrayScale), SelectedFilters.Count));
     }
+    public void AddRandomDitheringFilter()
+    {
+        SelectedFilters.Add(new GeneralFilterListItem(new GeneralFilter(FilterType.RandomDithering), SelectedFilters.Count));
+    }
     public void ClearSelectedFilters(){
         SelectedFilters.Clear();
     }
@@ -121,6 +125,8 @@ public partial class MainWindowViewModel : ViewModelBase
             DilationFilter.AddFilter = AddDilationFilter;
             var GrayScaleFilter = new GeneralFilter(FilterType.GrayScale);
             GrayScaleFilter.AddFilter = AddGrayScaleFilter;
+            var RandomDithering = new GeneralFilter(FilterType.RandomDithering);
+            RandomDithering.AddFilter = AddRandomDitheringFilter;
 
             Filters = new ObservableCollection<GeneralFilter>(new List<GeneralFilter>
             {
@@ -138,7 +144,8 @@ public partial class MainWindowViewModel : ViewModelBase
                 ErrosionFilter,
                 DilationFilter,
 
-                GrayScaleFilter
+                GrayScaleFilter,
+                RandomDithering,
             });
             
         }

@@ -68,14 +68,17 @@ public partial class MainWindow : Window
     private async void ApplyFilters(object sender, RoutedEventArgs e)
     {
         //create a copy to work with
-        pixelArray = new byte[OriginalPixelData.Length];
-        Array.Copy(OriginalPixelData, pixelArray, OriginalPixelData.Length);
+        //pixelArray = new byte[OriginalPixelData.Length];
+        var pixelData = new ImageData{ pixelArray = new byte[OriginalPixelData.Length],
+         pixelHeight = pixelHeight, pixelWidth = pixelWidth, stride = stride, IsGrayScale = false};
+
+        Array.Copy(OriginalPixelData, pixelData.pixelArray, OriginalPixelData.Length);
 
         var viewModel = this.DataContext as MainWindowViewModel;
 
         foreach (var filterItem in viewModel.SelectedFilters)
         {
-            filterItem.filter.ApplyFilter(pixelArray, pixelWidth, pixelHeight, stride);
+            filterItem.filter.ApplyFilter(pixelData);
         }
 
         imageControl2 = this.FindControl<Image>("ImageControll2");
@@ -88,7 +91,7 @@ public partial class MainWindow : Window
 
         using (var frameBuffer = bitmap2.Lock())
         {
-            Marshal.Copy(pixelArray, 0, frameBuffer.Address, pixelArray.Length);
+            Marshal.Copy(pixelData.pixelArray, 0, frameBuffer.Address, pixelData.pixelArray.Length);
         }
         imageControl2.Source = bitmap2;
     }

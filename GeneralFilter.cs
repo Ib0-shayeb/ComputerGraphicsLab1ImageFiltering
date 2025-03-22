@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
+using Avalonia.Styling;
 using ReactiveUI;
 
 namespace ComputerGraphicsLab1_ImageFiltering
@@ -25,8 +26,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
         Errosion,
         Dilation,
         GrayScale,
+        RandomDithering,
     }
-
+    public class ImageData{
+        public byte[] pixelArray {get; set;}
+        public int pixelWidth, pixelHeight, stride;
+        public bool IsGrayScale { get; set;}
+    }
     public class GeneralFilterListItem{
         public GeneralFilter filter {get;}
         public int index {get;}
@@ -54,6 +60,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
         public GeneralFilter(FilterType ftype){
             FType = ftype;
             Points points;
+            
             switch (FType)
             {
                 case FilterType.Inversion:
@@ -107,54 +114,60 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 case FilterType.GrayScale:
                     Name = "GrayScale";
                     break;
+                case FilterType.RandomDithering:
+                    Name = "RandomDithering";
+                    break;
             }
         }
-        public  byte[] ApplyFilter(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride){
+        public byte[] ApplyFilter(ImageData imageData){
             
             switch (FType)
             {
                 case FilterType.Inversion:
-                    GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GeneralFunctionFilterApply(imageData);
                     break;
                 case FilterType.BrightnessCorrection:
-                    GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GeneralFunctionFilterApply(imageData);
                     // BrightnessCorrectionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
                 case FilterType.ContrastEnhancement:
-                    GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GeneralFunctionFilterApply(imageData);
                     //ContrastEnhancementFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
                     break;
                 case FilterType.GammaCorrection:
                     //GeneralFunctionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
-                    GammaCorrectionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GammaCorrectionFilterApply(imageData);
                     break;
                 case FilterType.Blur:
-                    BlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    BlurFilterApply(imageData);
                     break;
                 case FilterType.Emboss:
-                    EmbossFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    EmbossFilterApply(imageData);
                     break;
                 case FilterType.EdgeDetection:
-                    EdgeDetectionFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    EdgeDetectionFilterApply(imageData);
                     break;
                 case FilterType.Sharpen:
-                    SharpenFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    SharpenFilterApply(imageData);
                     break;
                 case FilterType.GausianBlur:
-                    GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GausianBlurFilterApply(imageData);
                     break;
                 case FilterType.Errosion:
-                    GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GausianBlurFilterApply(imageData);
                     break;
                 case FilterType.Dilation:
-                    GausianBlurFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GausianBlurFilterApply(imageData);
                     break;
                 case FilterType.GrayScale:
-                    GrayScaleFilterApply(pixelArray, pixelWidth, pixelHeight, stride);
+                    GrayScaleFilterApply(imageData);
+                    break;
+                case FilterType.RandomDithering:
+                    RandomDitheringFilterApply(imageData);
                     break;
             }
             
-            return pixelArray;
+            return imageData.pixelArray;
         }
         public byte findOutputFromPolyline(byte color, IList<Point> points){
             int i;
@@ -167,8 +180,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             byte Y = (byte)(M * color + C);
             return Y;
         }
-        public byte[] GeneralFunctionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public byte[] GeneralFunctionFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             var points = editablePolyline._polyline.Points;
 
             for (int y = 0; y < pixelHeight; y++)
@@ -187,9 +205,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] ErrosionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] ErrosionFilterApply(ImageData imageData)
         {
-                
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             for (int y = 0; y < pixelHeight; y++)
             {
                 for (int x = 0; x < pixelWidth; x++)
@@ -205,9 +227,12 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] DilationFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] DilationFilterApply(ImageData imageData)
         {
-            
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
             for (int y = 0; y < pixelHeight; y++)
             {
                 for (int x = 0; x < pixelWidth; x++)
@@ -280,8 +305,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
 
             return sum;
         }
-        public static byte[] EmbossFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] EmbossFilterApply( ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int[,] matrix = {
                 {-1, 0, 1},
                 {-1, 1, 1},
@@ -302,8 +332,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] EdgeDetectionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] EdgeDetectionFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int[,] matrix = {
                 {0, -1, 0},
                 {0, 1, 0},
@@ -324,8 +359,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] SharpenFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] SharpenFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int[,] matrix = {
                 {0,-1, 0},
                 {-1, 5, -1},
@@ -346,8 +386,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] GausianBlurFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] GausianBlurFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int[,] matrix = {
                 {0, 1, 0},
                 {1, 4, 1},
@@ -368,8 +413,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] BlurFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] BlurFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int[,] matrix = {
                 {1, 1, 1},
                 {1, 1, 1},
@@ -397,8 +447,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
         public static byte TrimValue(int value){
             return (byte)Math.Max(0, Math.Min(255, value));
         }
-        public static byte[] BrightnessCorrectionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] BrightnessCorrectionFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int CorrectionConstant = 30;
             for (int y = 0; y < pixelHeight; y++)
             {
@@ -416,8 +471,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] ContrastEnhancementFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] ContrastEnhancementFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             int enhancmentReductionConst = 10;
             for (int y = 0; y < pixelHeight; y++)
             {
@@ -435,8 +495,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] GammaCorrectionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] GammaCorrectionFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             var gamma = 0.25;
             var gammaCorrection = 1/gamma;
             //per pixel gama corection
@@ -456,8 +521,13 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] InversionFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public static byte[] InversionFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             for (int y = 0; y < pixelHeight; y++)
             {
                 for (int x = 0; x < pixelWidth; x++)
@@ -474,8 +544,116 @@ namespace ComputerGraphicsLab1_ImageFiltering
             return pixelArray;
 
         }
-        public static byte[] GrayScaleFilterApply(byte[] pixelArray, int pixelWidth, int pixelHeight, int stride)
+        public byte[] RandomDitheringFilterApply(ImageData imageData)
         {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
+            Random rand = new Random();
+            int k = 8;//dithering const/ palete size
+            byte[] thresholds = new byte[k];
+            byte[] palete = new byte[k];// preparing palete
+            var step = 255.0 / (k - 1);
+            for(int i = 0; i < k - 1; i++){
+                palete[i] = (byte)(step * i);
+                thresholds[i] = (byte)(step * i);
+            }
+            palete[k - 1] = 255;
+            thresholds[k - 1] = 255;
+
+            if(imageData.IsGrayScale){
+                for (int y = 0; y < pixelHeight; y++)
+                {
+                    for (int x = 0; x < pixelWidth; x++)
+                    {
+                        int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                        for(int i = 1; i < k; i++){
+                            byte randomNumber = (byte)rand.Next(0, (int)(step));
+                            thresholds[i] -=  randomNumber;
+                        }
+                        
+                        byte Gray = pixelArray[index];
+                        for(int i = 0;i < k; i++){
+                            if(Gray < thresholds[i]) {
+                                Gray = palete[i];
+                                break;
+                            }
+                        }
+
+                        pixelArray[index] = (byte)TrimValue(Gray);      // Blue
+                        pixelArray[index + 1] = (byte)TrimValue(Gray);  // Green
+                        pixelArray[index + 2] = (byte)TrimValue(Gray);  // Red
+
+                    }
+                }
+            }
+            else{
+                for (int y = 0; y < pixelHeight; y++)
+                {
+                    for (int x = 0; x < pixelWidth; x++)
+                    {
+                        int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                        for(int i = 0; i < k-1; i++){
+                            byte randomNumber = (byte)rand.Next(0, (int)(step));
+                            thresholds[i] +=  randomNumber;
+                        }
+                        
+                        byte Color = pixelArray[index];
+                        for(int i = 0;i < k; i++){
+                            if(Color < thresholds[i]) {
+                                Color = palete[i];
+                                break;
+                            }
+                        }
+
+                        pixelArray[index] = (byte)TrimValue(Color);      // Blue
+
+                        for(int i = 0; i < k-1; i++){
+                            byte randomNumber = (byte)rand.Next(0, (int)(step));
+                            thresholds[i] +=  randomNumber;
+                        }
+                        
+                        Color = pixelArray[index + 1];
+                        for(int i = 0;i < k; i++){
+                            if(Color < thresholds[i]) {
+                                Color = palete[i];
+                                break;
+                            }
+                        }
+                        pixelArray[index + 1] = (byte)TrimValue(Color);  // Green
+
+                        for(int i = 0; i < k-1; i++){
+                            byte randomNumber = (byte)rand.Next(0, (int)(step));
+                            thresholds[i] +=  randomNumber;
+                        }
+                        
+                        Color = pixelArray[index + 2];
+                        for(int i = 0;i < k; i++){
+                            if(Color < thresholds[i]) {
+                                Color = palete[i];
+                                break;
+                            }
+                        }
+                        pixelArray[index + 2] = (byte)TrimValue(Color);  // Red
+
+                    }
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public byte[] GrayScaleFilterApply(ImageData imageData)
+        {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
             for (int y = 0; y < pixelHeight; y++)
             {
                 for (int x = 0; x < pixelWidth; x++)
@@ -493,6 +671,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     pixelArray[index + 2] = Gray;
                 }
             }
+            imageData.IsGrayScale = true;
 
             return pixelArray;
 
