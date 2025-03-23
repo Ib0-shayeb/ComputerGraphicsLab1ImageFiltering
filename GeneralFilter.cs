@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Styling;
+using DynamicData;
 using ReactiveUI;
 
 namespace ComputerGraphicsLab1_ImageFiltering
@@ -27,6 +28,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
         Dilation,
         GrayScale,
         RandomDithering,
+        KMeans,
     }
     public class ImageData{
         public byte[] pixelArray {get; set;}
@@ -117,6 +119,9 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 case FilterType.RandomDithering:
                     Name = "RandomDithering";
                     break;
+                case FilterType.KMeans:
+                    Name = "KMeans";
+                    break;
             }
         }
         public byte[] ApplyFilter(ImageData imageData){
@@ -164,6 +169,9 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     break;
                 case FilterType.RandomDithering:
                     RandomDitheringFilterApply(imageData);
+                    break;
+                case FilterType.KMeans:
+                    KMeansFilterApply(imageData);
                     break;
             }
             
@@ -538,6 +546,97 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     pixelArray[index + 1] = (byte)TrimValue(255 - pixelArray[index + 1]);  // Green
                     pixelArray[index + 2] = (byte)TrimValue(255 - pixelArray[index + 2]); // Red
 
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public int CompareColors(byte ar, byte ag, byte ab, byte br, byte bg, byte bb){
+            return (int)Math.Sqrt(Math.Pow(ar - br, 2) + Math.Pow(ag - bg, 2) + Math.Pow(ab - bb, 2));
+        }
+        public bool differentCollorPallete(byte[] oldPalette, byte[] palette, int K){
+            //returns true if palette is different from oldPalette
+            bool same = true;
+            for(int i = 0; i < K; i++){
+                if(oldPalette[i*4] != palette[i*4]) same = false;
+                if(oldPalette[(i*4)+1] != palette[(i*4)+1]) same = false;
+                if(oldPalette[(i*4)+2] != palette[(i*4)+2]) same = false;
+            }
+            return !same;
+        }
+        public byte[] KMeansFilterApply(ImageData imageData)
+        {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
+            byte[] CentroidAssignment = new byte[pixelHeight * pixelWidth];//every pixel wil be assigned to a centroid
+                                                                        //order = pixelArray order, data = centroidIndex
+            int K = 8;//palette size
+            byte[] oldPalette = new byte[K * 4];//K collors
+            byte[] palette = new byte[K * 4];//K collors
+            //innit palette with K rand collors
+            for(int i = 0; i< K; i++){
+                palette[i*4] = (byte)(i* (255/K));
+                palette[i*4 + 1] = (byte)(i* (255/K));
+                palette[i*4 + 2] = (byte)(i* (255/K));
+            }
+
+            while(differentCollorPallete(oldPalette, palette, K)){
+                for (int y = 0; y < pixelHeight; y++)
+                {
+                    for (int x = 0; x < pixelWidth; x++)
+                    {
+                        int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                        //assign each pixel to its closest centroid
+                        byte selectedCentroidIndex = 0;
+                        byte closestCentroidDistance = Byte.MaxValue;
+                        for(int i = 0; i < K; i++){
+                            //if (compare: color(palette[K], [K+1], [K+2]) to color(pixelArray[index], [index+1], [index+2])
+                            int dist = CompareColors(palette[4*i], palette[4*i+1], palette[4*i+2], pixelArray[index], pixelArray[index+1], pixelArray[index+2]);
+                            if(dist < closestCentroidDistance){
+                                selectedCentroidIndex = (byte)i;
+                                closestCentroidDistance = (byte)dist;
+                            }
+                        }
+                        CentroidAssignment[(y * pixelWidth) + x] = selectedCentroidIndex; //at (x, y) set centroid to selectedCentroidIndex 
+                    }
+                }
+                //for every centroid calculate new palette value by averaging the pixel collors for all pixels under that centroid
+                Int128[] CentroidSums = new Int128[K * 4];
+                int[] CentroidCounts = new int[K];
+                for (int y = 0; y < pixelHeight; y++)
+                {
+                    for (int x = 0; x < pixelWidth; x++)
+                    {
+                        int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                        int centroidIndex = CentroidAssignment[(y * pixelWidth) + x];
+                        CentroidCounts[centroidIndex]++;
+                        CentroidSums[centroidIndex * 4] += pixelArray[index];
+                        CentroidSums[centroidIndex * 4 + 1] += pixelArray[index + 1];
+                        CentroidSums[centroidIndex * 4 + 2] += pixelArray[index + 2];
+                    }
+                }
+                //save old & set new palette
+                for(int i = 0; i< K; i++){
+                    oldPalette[i] = palette[i];
+                    palette[i*4] = (byte)(CentroidSums[i*4] / CentroidCounts[i]);
+                    palette[i*4 + 1] = (byte)(CentroidSums[i*4 + 1] / CentroidCounts[i]);
+                    palette[i*4 + 2] = (byte)(CentroidSums[i*4 + 2] / CentroidCounts[i]);
+                }
+            }
+            //now actually modify the pixel array values by replacing them with its closest centroid
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    pixelArray[index] = palette[CentroidAssignment[(y * pixelWidth) + x]];
                 }
             }
 
