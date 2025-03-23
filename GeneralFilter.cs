@@ -54,7 +54,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
     public class GeneralFilter
     {
         public EditablePolyline editablePolyline {get;}
-        public double constant;
+        public double constant {get; set;}
         public FilterType FType {get;}
         public  string Name {get;}
         public  Action? AddFilter { get; set; }
@@ -121,6 +121,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     break;
                 case FilterType.KMeans:
                     Name = "KMeans";
+                    constant = 8;
                     break;
             }
         }
@@ -574,7 +575,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
 
             byte[] CentroidAssignment = new byte[pixelHeight * pixelWidth];//every pixel wil be assigned to a centroid
                                                                         //order = pixelArray order, data = centroidIndex
-            int K = 8;//palette size
+            int K = (int)constant;//palette size
             byte[] oldPalette = new byte[K * 4];//K collors
             byte[] palette = new byte[K * 4];//K collors
             //innit palette with K rand collors
