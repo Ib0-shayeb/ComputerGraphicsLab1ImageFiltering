@@ -623,7 +623,9 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 }
                 //save old & set new palette
                 for(int i = 0; i< K; i++){
-                    oldPalette[i] = palette[i];
+                    oldPalette[i*4] = palette[i*4];
+                    oldPalette[i*4 + 1] = palette[i*4 + 1];
+                    oldPalette[i*4 + 2] = palette[i*4 + 2];
                     palette[i*4] = (byte)(CentroidSums[i*4] / CentroidCounts[i]);
                     palette[i*4 + 1] = (byte)(CentroidSums[i*4 + 1] / CentroidCounts[i]);
                     palette[i*4 + 2] = (byte)(CentroidSums[i*4 + 2] / CentroidCounts[i]);
@@ -636,7 +638,9 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 {
                     int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
 
-                    pixelArray[index] = palette[CentroidAssignment[(y * pixelWidth) + x]];
+                    pixelArray[index] = palette[CentroidAssignment[(y * pixelWidth) + x]*4];
+                    pixelArray[index + 1] = palette[CentroidAssignment[(y * pixelWidth) + x]*4 + 1];
+                    pixelArray[index + 2] = palette[CentroidAssignment[(y * pixelWidth) + x]*4 + 2];
                 }
             }
 

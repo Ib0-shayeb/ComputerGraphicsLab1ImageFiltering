@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ComputerGraphicsLab1_ImageFiltering")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+260b4b2db927a3f93d12a6067b886cd4ceec3798")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c28b7ea1e6537fb7c23cb78c02141c53d63917a1")]
 [assembly: System.Reflection.AssemblyProductAttribute("ComputerGraphicsLab1_ImageFiltering")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ComputerGraphicsLab1_ImageFiltering")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
