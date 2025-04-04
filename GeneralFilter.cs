@@ -29,6 +29,8 @@ namespace ComputerGraphicsLab1_ImageFiltering
         GrayScale,
         RandomDithering,
         KMeans,
+        ycbcr,
+        nycbcr,
     }
     public class ImageData{
         public byte[] pixelArray {get; set;}
@@ -118,10 +120,17 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     break;
                 case FilterType.RandomDithering:
                     Name = "RandomDithering";
+                    constant = 8;
                     break;
                 case FilterType.KMeans:
                     Name = "KMeans";
                     constant = 8;
+                    break;
+                case FilterType.ycbcr:
+                    Name = "ycbcr";
+                    break;
+                case FilterType.nycbcr:
+                    Name = "nycbcr";
                     break;
             }
         }
@@ -174,6 +183,12 @@ namespace ComputerGraphicsLab1_ImageFiltering
                 case FilterType.KMeans:
                     KMeansFilterApply(imageData);
                     break;
+                case FilterType.ycbcr:
+                    ycbcrFilterApply(imageData);
+                    break;
+                case FilterType.nycbcr:
+                    nycbcrFilterApply(imageData);
+                    break;
             }
             
             return imageData.pixelArray;
@@ -207,6 +222,68 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     pixelArray[index] = findOutputFromPolyline(pixelArray[index], points);      // Blue
                     pixelArray[index + 1] = findOutputFromPolyline(pixelArray[index + 1], points);  // Green
                     pixelArray[index + 2] = findOutputFromPolyline(pixelArray[index + 2], points); // Red
+
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public static byte[] ycbcrFilterApply(ImageData imageData)
+        {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    byte B = pixelArray[index];
+                    byte G = pixelArray[index + 1];
+                    byte R = pixelArray[index + 2];
+
+                    byte Y  = (byte)(0.299 * R + 0.587 * G + 0.114 * B);
+                    byte Cb = (byte)(128 - 0.168736 * R - 0.331264 * G + 0.5 * B);
+                    byte Cr = (byte)(128 + 0.5 * R - 0.418688 * G - 0.081312 * B);
+
+                    pixelArray[index] = (byte)TrimValue(Y);      // Blue
+                    pixelArray[index + 1] = (byte)TrimValue(Cb);  // Green
+                    pixelArray[index + 2] = (byte)TrimValue(Cr); // Red
+
+                }
+            }
+
+            return pixelArray;
+
+        }
+        public static byte[] nycbcrFilterApply(ImageData imageData)
+        {
+            int pixelHeight = imageData.pixelHeight;
+            int pixelWidth = imageData.pixelWidth;
+            int stride = imageData.stride;
+            byte[] pixelArray = imageData.pixelArray;
+
+            for (int y = 0; y < pixelHeight; y++)
+            {
+                for (int x = 0; x < pixelWidth; x++)
+                {
+                    int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
+
+                    byte Y = pixelArray[index];
+                    byte Cb = pixelArray[index + 1];
+                    byte Cr = pixelArray[index + 2];
+
+                    byte B = (byte)(Y + 1.772 * (Cb - 128));
+                    byte G = (byte)(Y - 0.344136 * (Cb - 128) - 0.714136 * (Cr - 128));
+                    byte R = (byte)(Y + 1.402 * (Cr - 128));
+
+                    pixelArray[index] = (byte)TrimValue(B);      // Blue
+                    pixelArray[index + 1] = (byte)TrimValue(G);  // Green
+                    pixelArray[index + 2] = (byte)TrimValue(R); // Red
 
                 }
             }
@@ -579,13 +656,16 @@ namespace ComputerGraphicsLab1_ImageFiltering
             byte[] oldPalette = new byte[K * 4];//K collors
             byte[] palette = new byte[K * 4];//K collors
             //innit palette with K rand collors
-            for(int i = 0; i< K; i++){
-                palette[i*4] = (byte)(i* (255/K));
-                palette[i*4 + 1] = (byte)(i* (255/K));
-                palette[i*4 + 2] = (byte)(i* (255/K));
+            Random rand = new Random();
+            for(int i = 0; i< K; i++){//make it rand
+                palette[i*4] = (byte)(rand.Next(0, 255));
+                palette[i*4 + 1] = (byte)(rand.Next(0, 255));
+                palette[i*4 + 2] = (byte)(rand.Next(0, 255));
             }
-
-            while(differentCollorPallete(oldPalette, palette, K)){
+            int KMEANSLOOPLIMIT = 50;
+            int ni = 0;
+            do {//do while  //add limit
+            ni++;
                 for (int y = 0; y < pixelHeight; y++)
                 {
                     for (int x = 0; x < pixelWidth; x++)
@@ -607,7 +687,7 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     }
                 }
                 //for every centroid calculate new palette value by averaging the pixel collors for all pixels under that centroid
-                Int128[] CentroidSums = new Int128[K * 4];
+                Int64[] CentroidSums = new Int64[K * 4];
                 int[] CentroidCounts = new int[K];
                 for (int y = 0; y < pixelHeight; y++)
                 {
@@ -627,11 +707,19 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     oldPalette[i*4] = palette[i*4];
                     oldPalette[i*4 + 1] = palette[i*4 + 1];
                     oldPalette[i*4 + 2] = palette[i*4 + 2];
-                    palette[i*4] = (byte)(CentroidSums[i*4] / CentroidCounts[i]);
-                    palette[i*4 + 1] = (byte)(CentroidSums[i*4 + 1] / CentroidCounts[i]);
-                    palette[i*4 + 2] = (byte)(CentroidSums[i*4 + 2] / CentroidCounts[i]);
+                    if(CentroidCounts[i] == 0){
+                        palette[i*4] = 0;
+                        palette[i*4 + 1] = 0;
+                        palette[i*4 + 2] = 0;
+                    }
+                    else{
+                        palette[i*4] = (byte)(CentroidSums[i*4] / CentroidCounts[i]);// div by 0
+                        palette[i*4 + 1] = (byte)(CentroidSums[i*4 + 1] / CentroidCounts[i]);
+                        palette[i*4 + 2] = (byte)(CentroidSums[i*4 + 2] / CentroidCounts[i]);
+                    }
                 }
-            }
+            } while(differentCollorPallete(oldPalette, palette, K) && ni < KMEANSLOOPLIMIT);
+
             //now actually modify the pixel array values by replacing them with its closest centroid
             for (int y = 0; y < pixelHeight; y++)
             {
@@ -656,16 +744,16 @@ namespace ComputerGraphicsLab1_ImageFiltering
             byte[] pixelArray = imageData.pixelArray;
 
             Random rand = new Random();
-            int k = 8;//dithering const/ palete size
-            byte[] thresholds = new byte[k];
-            byte[] palete = new byte[k];// preparing palete
+            int k = (int)constant;//dithering const/ palete size
+            // byte[] thresholds = new byte[k];
+            // byte[] palete = new byte[k];// preparing palete
             var step = 255.0 / (k - 1);
-            for(int i = 0; i < k - 1; i++){
-                palete[i] = (byte)(step * i);
-                thresholds[i] = (byte)(step * i);
-            }
-            palete[k - 1] = 255;
-            thresholds[k - 1] = 255;
+            // for(int i = 0; i < k - 1; i++){
+            //     palete[i] = (byte)(step * i);
+                //thresholds[i] = (byte)(step * i);
+            // }
+            // palete[k - 1] = 255;
+            //thresholds[k - 1] = 255;
 
             if(imageData.IsGrayScale){
                 for (int y = 0; y < pixelHeight; y++)
@@ -674,18 +762,23 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     {
                         int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
 
-                        for(int i = 1; i < k; i++){
-                            byte randomNumber = (byte)rand.Next(0, (int)(step));
-                            thresholds[i] -=  randomNumber;
-                        }
+                        // for(int i = 1; i < k; i++){
+                        //     byte randomNumber = (byte)rand.Next(0, (int)(step));
+                        //     thresholds[i] -=  randomNumber;
+                        // }
                         
+                        
+                        // for(int i = 0;i < k; i++){
+                        //     if(Gray < thresholds[i]) {
+                        //         Gray = palete[i];
+                        //         break;
+                        //     }
+                        // }
                         byte Gray = pixelArray[index];
-                        for(int i = 0;i < k; i++){
-                            if(Gray < thresholds[i]) {
-                                Gray = palete[i];
-                                break;
-                            }
-                        }
+                        byte t = (byte)(Gray/step);
+                        byte randomNumber = (byte)rand.Next(0, (int)(step));
+                        int paletteIndex = Gray - t * step < randomNumber ? (t + 1 >= k ? t : t + 1) : t;
+                        Gray = (byte)(step * paletteIndex);
 
                         pixelArray[index] = (byte)TrimValue(Gray);      // Blue
                         pixelArray[index + 1] = (byte)TrimValue(Gray);  // Green
@@ -701,47 +794,41 @@ namespace ComputerGraphicsLab1_ImageFiltering
                     {
                         int index = (y * stride) + (x * 4); // Assuming 32-bit RGBA format
 
-                        for(int i = 0; i < k-1; i++){
-                            byte randomNumber = (byte)rand.Next(0, (int)(step));
-                            thresholds[i] +=  randomNumber;
-                        }
+                        // for(int i = 0; i < k-1; i++){
+                        //     byte randomNumber = (byte)rand.Next(0, (int)(step));
+                        //     thresholds[i] +=  randomNumber;
+                        // }
                         
+                        
+                        // for(int i = 0;i < k; i++){
+                        //     if(Color < thresholds[i]) {
+                        //         Color = palete[i];
+                        //         break;
+                        //     }
+                        // }
+
                         byte Color = pixelArray[index];
-                        for(int i = 0;i < k; i++){
-                            if(Color < thresholds[i]) {
-                                Color = palete[i];
-                                break;
-                            }
-                        }
+                        byte t = (byte)(Color/step);
+                        byte randomNumber = (byte)rand.Next(0, (int)(step));
+                        int paletteIndex = Color - t * step < randomNumber ? (t + 1 >= k ? t : t + 1) : t;
+                        Color = (byte)(step * paletteIndex);
 
                         pixelArray[index] = (byte)TrimValue(Color);      // Blue
-
-                        for(int i = 0; i < k-1; i++){
-                            byte randomNumber = (byte)rand.Next(0, (int)(step));
-                            thresholds[i] +=  randomNumber;
-                        }
-                        
+                        ////////
                         Color = pixelArray[index + 1];
-                        for(int i = 0;i < k; i++){
-                            if(Color < thresholds[i]) {
-                                Color = palete[i];
-                                break;
-                            }
-                        }
-                        pixelArray[index + 1] = (byte)TrimValue(Color);  // Green
+                        t = (byte)(Color/step);
+                        randomNumber = (byte)rand.Next(0, (int)(step));
+                        paletteIndex = Color - t * step < randomNumber ? (t + 1 >= k ? t : t + 1) : t;
+                        Color = (byte)(step * paletteIndex);
 
-                        for(int i = 0; i < k-1; i++){
-                            byte randomNumber = (byte)rand.Next(0, (int)(step));
-                            thresholds[i] +=  randomNumber;
-                        }
-                        
+                        pixelArray[index + 1] = (byte)TrimValue(Color);  // Green
+                        //////////////
                         Color = pixelArray[index + 2];
-                        for(int i = 0;i < k; i++){
-                            if(Color < thresholds[i]) {
-                                Color = palete[i];
-                                break;
-                            }
-                        }
+                        t = (byte)(Color/step);
+                        randomNumber = (byte)rand.Next(0, (int)(step));
+                        paletteIndex = Color - t * step < randomNumber ? (t + 1 >= k ? t : t + 1) : t;
+                        Color = (byte)(step * paletteIndex);
+                        
                         pixelArray[index + 2] = (byte)TrimValue(Color);  // Red
 
                     }

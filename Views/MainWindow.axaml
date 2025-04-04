@@ -25,9 +25,13 @@
             <Button Content="{Binding Greeting}"/>
         </StackPanel>
         
-        <Grid Grid.Row="1" ColumnDefinitions="*,*,300"  Margin="4">
-            <Image Stretch="None" Name="ImageControll1"/>
-            <Image Stretch="None" Grid.Column="1" Name="ImageControll2"/>
+        <Grid Grid.Row="1" ColumnDefinitions="*,*,auto"  Margin="4">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <Image Stretch="None" Name="ImageControll1"/>
+            </ScrollViewer>
+            <ScrollViewer Grid.Column="1" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <Image Stretch="None"  Name="ImageControll2"/>
+            </ScrollViewer>
             <Grid Grid.Column="2" RowDefinitions="auto,auto,auto,auto"  Margin="4">
                 <StackPanel Grid.Row="0" Name="ChooseFiltersStackPanel" Background="Red">
                     <ItemsControl ItemsSource="{Binding Filters}">
@@ -56,9 +60,9 @@
                     <Button Content="Apply Filters" Click="ApplyFilters"/>
                 </StackPanel>
                 
-                <StackPanel Grid.Row="3" Margin="0,90,0,0">
+                <StackPanel Grid.Row="3" Margin="0,40,0,0">
                     <ContentControl Content="{Binding SelectedItem.filter.editablePolyline}" />
-                    <NumericUpDown Minimum="0" Maximum="100" Increment="1" Value="{Binding SelectedItem.filter.constant}" />
+                    <NumericUpDown Minimum="0" Maximum="300" Increment="1" Value="{Binding SelectedItem.filter.constant}" />
                 </StackPanel>
             </Grid>
         </Grid>
